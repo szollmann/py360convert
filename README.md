@@ -16,17 +16,12 @@ Features of this project:
 - scipy
 - pillow (for example code to load/save image)
 
-## Install
-```
-pip install py360convert
-```
-Now at everywhere, you can `import py360convert` or use the command line tool `convert360`.
 
 ### Command line examples
 You can run command line tool to use the functionality. Please See `convert360 -h` for detailed. The python script is also an example code to see how to use this as a package in your code.
 
 ```
-convert360 --convert e2c --i assert/example_input.png --o assert/example_e2c.png --w 200
+convert360 --convert e2c --i assert/example_input.mp4 --o assert/example_e2c.mp4 --w 200
 ```
 | Input Equirectangular | Output Cubemap |
 | :---: | :----: |
@@ -35,7 +30,7 @@ convert360 --convert e2c --i assert/example_input.png --o assert/example_e2c.png
 -----
 
 ```
-convert360 --convert c2e --i assert/example_e2c.png --o assert/example_c2e.png --w 800 --h 400
+convert360 --convert c2e --i assert/example_e2c.mp4 --o assert/example_c2e.mp4 --w 800 --h 400
 ```
 | Input Cubemap | Output Equirectangular |
 | :---: | :----: |
@@ -46,7 +41,7 @@ You can see the blurring artifacts in the polar region because the equirectangul
 ----
 
 ```
-convert360 --convert e2p --i assert/example_input.png --o assert/example_e2p.png --w 300 --h 300 --u_deg 120 --v_deg 23
+convert360 --convert e2p --i assert/example_input.mp4 --o assert/example_e2p.mp4--w 300 --h 300 --u_deg 120 --v_deg 23
 ```
 | Input Equirectangular | Output Perspective |
 | :---: | :----: |
