@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 from PIL import Image
+import cv2
 
 import py360convert
 
@@ -13,9 +14,9 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('--convert', choices=['c2e', 'e2c', 'e2p'], required=True,
                     help='What convertion to apply.')
 parser.add_argument('--i', required=True,
-                    help='Path to input image.')
+                    help='Path to input video.')
 parser.add_argument('--o', required=True,
-                    help='Path to output image.')
+                    help='Path to output video.')
 parser.add_argument('--w', required=True, type=int,
                     help='Output width for c2e or e2p. Output cube faces width for e2c.')
 parser.add_argument('--h', type=int,
@@ -35,21 +36,51 @@ parser.add_argument('--in_rot_deg', type=float, default=0,
 args = parser.parse_args()
 
 
-# Read image
-img = np.array(Image.open(args.i))
-if len(img.shape) == 2:
-    img = img[..., None]
+# Read video
+print("open" + args.i)
+vcap = cv2.VideoCapture(args.i)
+# Define the codec and create VideoWriter object
 
-# Convert
-if args.convert == 'c2e':
-    out = py360convert.c2e(img, h=args.h, w=args.w, mode=args.mode)
-elif args.convert == 'e2c':
-    out = py360convert.e2c(img, face_w=args.w, mode=args.mode)
-elif args.convert == 'e2p':
-    out = py360convert.e2p(img, fov_deg=(args.h_fov, args.v_fov), u_deg=args.u_deg, v_deg=args.v_deg,
-                           out_hw=(args.h, args.w), in_rot_deg=args.in_rot_deg, mode=args.mode)
-else:
-    raise NotImplementedError('Unknown convertion')
+if vcap.isOpened():
+    width  = vcap.get(cv2.CAP_PROP_FRAME_WIDTH)   # float `width`
+    height = vcap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float `height`
 
-# Output image
-Image.fromarray(out.astype(np.uint8)).save(args.o)
+fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+videoout = cv2.VideoWriter(args.o, fourcc, 25.0, (args.w,args.h))
+
+
+while(vcap.isOpened()):
+
+    ret, img = vcap.read()
+
+    if ret==True:
+        if len(img.shape) == 2:
+            img = img[..., None]
+
+        # Convert
+        if args.convert == 'c2e':
+            out = py360convert.c2e(img, h=args.h, w=args.w, mode=args.mode)
+        elif args.convert == 'e2c':
+            out = py360convert.e2c(img, face_w=args.w, mode=args.mode)
+        elif args.convert == 'e2p':
+            out = py360convert.e2p(img, fov_deg=(args.h_fov, args.v_fov), u_deg=args.u_deg, v_deg=args.v_deg,
+                                   out_hw=(args.h, args.w), in_rot_deg=args.in_rot_deg, mode=args.mode)
+        else:
+            raise NotImplementedError('Unknown convertion')
+
+        # Output image
+        #Image.fromarray(out.astype(np.uint8)).save(args.o)
+        # write the flipped frame
+        videoout.write(out)
+
+        cv2.imshow('frame',out)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    else:
+        break
+
+
+videoout.release()
+vcap.release()
+cv2.destroyAllWindows()
